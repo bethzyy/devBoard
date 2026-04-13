@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; font-size: 14px; }
+
+.header { background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; font-weight: 600; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
+.header-actions span { font-size: 13px; opacity: 0.85; }
+.ws-path { font-size: 12px; opacity: 0.7; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn-primary { background: #fff; color: #4a90d9; }
+.btn-primary:hover { background: #e8f0fe; }
+.btn-sm { padding: 5px 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; background: transparent; color: #fff; cursor: pointer; font-size: 12px; }
+.btn-sm:hover { background: rgba(255,255,255,0.15); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal-card { background: #fff; border-radius: 10px; padding: 24px 28px; width: 420px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+.modal-card h3 { font-size: 16px; color: #333; margin-bottom: 14px; }
+.modal-card input { width: 100%; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 12px; }
+.modal-card input:focus { border-color: #4a90d9; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-btns .btn { font-size: 13px; padding: 7px 18px; }
+.btn-cancel { background: #f5f5f5; color: #666; }
+.btn-confirm { background: #4a90d9; color: #fff; }
+.btn-confirm:hover { background: #357abd; }
+.btn-confirm:disabled { background: #bbb; cursor: not-allowed; }
+.modal-error { color: #c62828; font-size: 12px; margin-bottom: 8px; display: none; }
+
+.summary { max-width: 1600px; margin: 14px auto 0; padding: 0 28px; display: flex; gap: 10px; flex-wrap: wrap; }
+.summary-card { background: #fff; border-radius: 6px; padding: 10px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; align-items: baseline; gap: 6px; }
+.summary-card .num { font-size: 20px; font-weight: 700; }
+.summary-card .label { font-size: 12px; color: #888; }
+.c-green { color: #2e7d32; } .c-orange { color: #e65100; } .c-gray { color: #666; }
+.c-blue { color: #1565c0; } .c-purple { color: #7b1fa2; }
+
+.toolbar { max-width: 1600px; margin: 10px auto 0; padding: 0 28px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.toolbar input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 200px; outline: none; }
+.toolbar input:focus { border-color: #4a90d9; }
+.fbtn { padding: 5px 12px; border: 1px solid #ddd; border-radius: 16px; background: #fff; cursor: pointer; font-size: 12px; }
+.fbtn:hover { border-color: #4a90d9; color: #4a90d9; }
+.fbtn.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+
+.main { max-width: 1600px; margin: 12px auto; padding: 0 28px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+th { background: #4a90d9; color: #fff; text-align: left; padding: 8px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; font-size: 13px; }
+
+/* Group header */
+.grp-row td { background: #f0f4f8; padding: 8px 12px; font-weight: 600; font-size: 13px; color: #4a90d9; cursor: pointer; border-bottom: 2px solid #d0dae6; }
+.grp-row:hover td { background: #e4ecf4; }
+.grp-arrow { display: inline-block; width: 16px; transition: transform 0.2s; }
+.grp-arrow.collapsed { transform: rotate(-90deg); }
+.grp-count { font-weight: 400; color: #888; font-size: 12px; margin-left: 6px; }
+
+/* Project row */
+.proj-row td { padding: 6px 12px; }
+.proj-row:hover td { background: #f8fbff; }
+.proj-name { font-weight: 600; color: #333; white-space: nowrap; }
+
+/* Status */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.b-active { background: #e8f5e9; color: #2e7d32; }
+.b-stale { background: #fff3e0; color: #e65100; }
+.b-complete { background: #f5f5f5; color: #666; }
+.b-paused { background: #ffebee; color: #c62828; }
+.b-unknown { background: #fafafa; color: #aaa; }
+.b-type { background: #e8eaf6; color: #3949ab; font-size: 11px; }
+
+/* Days */
+.d-fresh { color: #2e7d32; font-weight: 600; }
+.d-ok { color: #e65100; }
+.d-old { color: #c62828; }
+
+/* Docs column */
+.docs-cell { max-width: 500px; }
+.doc-list { display: flex; flex-direction: column; gap: 2px; }
+.doc-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 12px; line-height: 1.4; }
+.doc-item a { color: #4a90d9; text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-item a:hover { text-decoration: underline; }
+.doc-item .doc-status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-not_started { background: #ccc; }
+.dot-in_progress { background: #1565c0; }
+.dot-completed { background: #2e7d32; }
+.dot-deleted { background: #e0e0e0; }
+.doc-status-select { font-size: 10px; padding: 0 2px; border: 1px solid #ddd; border-radius: 3px; background: #fff; cursor: pointer; flex-shrink: 0; }
+.doc-more { font-size: 11px; color: #888; padding: 2px 0; cursor: pointer; }
+.doc-more:hover { color: #4a90d9; }
+
+.footer { text-align: center; color: #aaa; font-size: 11px; margin-top: 24px; padding: 12px; }
+
+/* Hidden rows when group collapsed */
+.proj-row.hidden { display: none; }
+
+@media (max-width: 768px) {
+  .main, .toolbar, .summary { padding: 0 12px; }
+  .header { padding: 12px; }
+  .docs-cell { max-width: 200px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Project Dashboard</h1>
+  <div class="header-actions">
+    <span class="ws-path" title="{{ data.workspace }}">{{ data.workspace }}</span>
+    <button class="btn-sm" onclick="showWsDialog()">切换工作区</button>
+    <span>{{ data.scan_time }}</span>
+    <form method="POST" action="/scan" style="display:inline">
+      <button type="submit" class="btn btn-primary">重新扫描</button>
+    </form>
+  </div>
+</div>
+
+<!-- Workspace switch modal -->
+<div class="modal-overlay" id="ws-modal">
+  <div class="modal-card">
+    <h3>切换工作区</h3>
+    <div class="modal-error" id="ws-error"></div>
+    <input type="text" id="ws-input" placeholder="输入新的工作区目录路径...">
+    <div class="modal-btns">
+      <button class="btn btn-cancel" onclick="hideWsDialog()">取消</button>
+      <button class="btn btn-confirm" id="ws-confirm" onclick="switchWorkspace()">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card"><span class="num">{{ data.total_projects }}</span><span class="label">项目</span></div>
+  <div class="summary-card"><span class="num c-green">{{ data.summary.active }}</span><span class="label">活跃</span></div>
+  <div class="summary-card"><span class="num c-orange">{{ data.summary.stale }}</span><span class="label">停滞</span></div>
+  <div class="summary-card"><span class="num c-gray">{{ data.summary.complete }}</span><span class="label">完成</span></div>
+  <div class="summary-card"><span class="num c-blue">{{ data.summary.total_todos }}</span><span class="label">TODO</span></div>
+  <div class="summary-card"><span class="num c-purple">{{ data.total_plans }}</span><span class="label">计划</span></div>
+</div>
+
+<div class="toolbar">
+  <input type="text" placeholder="搜索项目 / 文档..." id="search">
+  <button class="fbtn active" data-f="all">全部</button>
+  <button class="fbtn" data-f="active">活跃</button>
+  <button class="fbtn" data-f="stale">停滞</button>
+  <button class="fbtn" data-f="complete">完成</button>
+  <button class="fbtn" data-f="has-docs">有文档</button>
+</div>
+
+<div class="main">
+<table>
+<thead>
+<tr>
+  <th style="width:140px">分类 / 项目</th>
+  <th>相关文档</th>
+  <th style="width:70px">状态</th>
+  <th style="width:55px">活跃</th>
+  <th style="width:90px">类型</th>
+  <th style="width:90px">技术栈</th>
+  <th style="width:55px">版本</th>
+  <th style="width:40px">TODO</th>
+</tr>
+</thead>
+<tbody id="tbody">
+{% for cat, projects in data.groups.items() %}
+<tr class="grp-row" onclick="toggleGroup(this)">
+  <td colspan="8">
+    <span class="grp-arrow">▼</span> {{ cat }}
+    <span class="grp-count">({{ projects | length }})</span>
+  </td>
+</tr>
+{% for p in projects %}
+<tr class="proj-row" data-status="{{ p.status }}" data-plans="{{ p.plan_count }}"
+    data-search="{{ p.name }} {{ p.description or '' }} {{ p.tech_stack | join(' ') }} {{ cat }}
+    {% for pl in p.plans %}{{ pl.title or '' }} {% endfor %}">
+  <td><span class="proj-name">{{ p.name }}</span></td>
+  <td class="docs-cell">
+    {% if p.plans %}
+    <div class="doc-list">
+      {% for plan in p.plans %}
+      <div class="doc-item">
+        <span class="doc-status-dot dot-{{ plan.user_status }}"></span>
+        <a href="/plan/{{ plan.filename }}" title="{{ plan.title or plan.filename }}">{{ plan.title or plan.filename }}</a>
+        <select class="doc-status-select" onchange="setPlanStatus('{{ plan.filename }}',this.value,this)">
+          <option value="not_started" {{ 'selected' if plan.user_status == 'not_started' }}>未开始</option>
+          <option value="in_progress" {{ 'selected' if plan.user_status == 'in_progress' }}>进行中</option>
+          <option value="completed" {{ 'selected' if plan.user_status == 'completed' }}>已完成</option>
+          <option value="deleted" {{ 'selected' if plan.user_status == 'deleted' }}>删除</option>
+        </select>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <span style="color:#ddd;font-size:12px">-</span>
+    {% endif %}
+  </td>
+  <td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td>
+  <td>
+    {% if p.days_since_activity is not none %}
+    <span class="{{ 'd-fresh' if p.days_since_activity <= 7 else ('d-ok' if p.days_since_activity <= 30 else 'd-old') }}">{{ p.days_since_activity }}d</span>
+    {% else %}<span style="color:#ddd">-</span>{% endif %}
+  </td>
+  <td><span class="badge b-type">{{ p.project_type or '-' }}</span></td>
+  <td style="font-size:12px">{{ p.tech_stack[:3] | join(', ') }}</td>
+  <td style="font-size:12px">{{ p.version or '-' }}</td>
+  <td>{% if p.todo_count %}<span style="color:#1565c0;font-weight:600">{{ p.todo_count }}</span>{% else %}0{% endif %}</td>
+</tr>
+{% endfor %}
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+<div class="footer">Project Dashboard — {{ data.scan_time }}</div>
+
+<script>
+function toggleGroup(row) {
+  const arrow = row.querySelector('.grp-arrow');
+  arrow.classList.toggle('collapsed');
+  let next = row.nextElementSibling;
+  while (next && !next.classList.contains('grp-row')) {
+    if (arrow.classList.contains('collapsed')) {
+      next.classList.add('hidden');
+    } else {
+      next.classList.remove('hidden');
+    }
+    next = next.nextElementSibling;
+  }
+}
+
+function setPlanStatus(filename, status, selectEl) {
+  fetch('/api/plan/' + encodeURIComponent(filename) + '/status', {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status: status})
+  }).then(r => r.json()).then(res => {
+    if (res.ok) {
+      const item = selectEl.closest('.doc-item');
+      const dot = item.querySelector('.doc-status-dot');
+      dot.className = 'doc-status-dot dot-' + status;
+    } else {
+      alert('Error: ' + (res.error || 'unknown'));
+    }
+  }).catch(err => alert('Error: ' + err));
+}
+
+// Filters
+// Workspace dialog
+function showWsDialog() {
+  document.getElementById('ws-modal').classList.add('show');
+  document.getElementById('ws-input').value = '';
+  document.getElementById('ws-input').focus();
+}
+function hideWsDialog() {
+  document.getElementById('ws-modal').classList.remove('show');
+}
+function switchWorkspace() {
+  const path = document.getElementById('ws-input').value.trim();
+  const errEl = document.getElementById('ws-error');
+  const btn = document.getElementById('ws-confirm');
+  if (!path) { errEl.textContent = '请输入路径'; errEl.style.display = 'block'; return; }
+  btn.disabled = true;
+  errEl.style.display = 'none';
+  fetch('/api/workspace', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({path: path})
+  }).then(r => r.json()).then(res => {
+    if (res.ok) location.reload();
+    else { errEl.textContent = res.error || '失败'; errEl.style.display = 'block'; btn.disabled = false; }
+  }).catch(err => { errEl.textContent = '网络错误: ' + err; errEl.style.display = 'block'; btn.disabled = false; });
+}
+document.getElementById('ws-modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideWsDialog(); });
+
+document.querySelectorAll('.fbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  });
+});
+document.getElementById('search').addEventListener('input', applyFilters);
+
+function applyFilters() {
+  const f = document.querySelector('.fbtn.active').dataset.f;
+  const q = document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.proj-row').forEach(row => {
+    const s = row.dataset.status;
+    const p = parseInt(row.dataset.plans) || 0;
+    const t = row.dataset.search.toLowerCase();
+    let show = true;
+    if (f === 'has-docs') show = p > 0;
+    else if (f !== 'all') show = s === f;
+    if (q && !t.includes(q)) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+  // Update group counts visibility
+  document.querySelectorAll('.grp-row').forEach(grp => {
+    let next = grp.nextElementSibling;
+    let anyVisible = false;
+    while (next && !next.classList.contains('grp-row')) {
+      if (next.style.display !== 'none' && !next.classList.contains('hidden')) anyVisible = true;
+      next = next.nextElementSibling;
+    }
+    grp.style.display = anyVisible ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

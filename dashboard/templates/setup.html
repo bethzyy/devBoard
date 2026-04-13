@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Dashboard - Setup</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+.setup-card { background: #fff; border-radius: 12px; padding: 40px 48px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); max-width: 520px; width: 90%; }
+.setup-card h1 { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 6px; }
+.setup-card .subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+.form-group input { width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.form-group input:focus { border-color: #4a90d9; }
+.form-group .hint { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+.btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-primary { background: #4a90d9; color: #fff; width: 100%; }
+.btn-primary:hover { background: #357abd; }
+.btn-primary:disabled { background: #bbb; cursor: not-allowed; }
+
+.error { color: #c62828; font-size: 12px; margin-top: 8px; display: none; }
+.error.show { display: block; }
+
+.current-ws { background: #f0f4f8; border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+.current-ws .label { font-size: 11px; color: #888; }
+.current-ws .path { font-size: 13px; font-weight: 600; color: #333; margin-top: 2px; word-break: break-all; }
+.current-ws a { color: #4a90d9; font-size: 13px; text-decoration: none; display: inline-block; margin-top: 8px; }
+.current-ws a:hover { text-decoration: underline; }
+
+.footer { text-align: center; color: #aaa; font-size: 11px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="setup-card">
+  <h1>Project Dashboard</h1>
+  <p class="subtitle">配置工作区目录，扫描并管理所有子项目</p>
+
+  {% if current_workspace %}
+  <div class="current-ws">
+    <div class="label">当前工作区</div>
+    <div class="path">{{ current_workspace }}</div>
+    <a href="/">&rarr; 进入 Dashboard</a>
+  </div>
+  {% endif %}
+
+  <div class="form-group">
+    <label for="ws-path">工作区目录路径</label>
+    <input type="text" id="ws-path" placeholder="例如: C:\Projects\MyWorkspace" autofocus>
+    <div class="hint">输入包含多个子项目的目录路径，工具将自动扫描该目录下的所有项目</div>
+  </div>
+
+  <div class="error" id="error-msg"></div>
+
+  <button class="btn btn-primary" id="scan-btn" onclick="startScan()">开始扫描</button>
+
+  <div class="footer">Project Dashboard &mdash; 通用项目管理工具</div>
+</div>
+
+<script>
+function startScan() {
+  const path = document.getElementById('ws-path').value.trim();
+  const btn = document.getElementById('scan-btn');
+  const errEl = document.getElementById('error-msg');
+
+  if (!path) {
+    errEl.textContent = '请输入工作区目录路径';
+    errEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '正在扫描...';
+  errEl.classList.remove('show');
+
+  fetch('/api/workspace', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({path: path})
+  }).then(r => r.json()).then(res => {
+    if (res.ok) {
+      window.location.href = '/';
+    } else {
+      errEl.textContent = res.error || '扫描失败，请检查路径';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = '开始扫描';
+    }
+  }).catch(err => {
+    errEl.textContent = '网络错误: ' + err;
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '开始扫描';
+  });
+}
+
+// Enter key triggers scan
+document.getElementById('ws-path').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startScan();
+});
+</script>
+</body>
+</html>
