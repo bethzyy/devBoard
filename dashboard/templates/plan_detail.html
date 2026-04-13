@@ -5,45 +5,304 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ title }} - Plan Detail</title>
 <style>
+:root {
+  --bg-primary: #1f1633;
+  --bg-deeper: #150f23;
+  --bg-surface: #2a1f42;
+  --bg-elevated: #342a4e;
+  --sentry-purple: #6a5fc1;
+  --muted-purple: #79628c;
+  --deep-violet: #422082;
+  --border-purple: #362d59;
+  --lime: #c2ef4e;
+  --coral: #ffb287;
+  --pink: #fa7faa;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9a94b0;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 18px;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
-.header { background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; }
-.header h1 { font-size: 18px; font-weight: 600; }
-.header a { color: #fff; text-decoration: none; opacity: 0.85; font-size: 13px; }
-.header a:hover { opacity: 1; }
-.container { max-width: 960px; margin: 0 auto; padding: 24px 30px; }
-.content { background: #fff; border-radius: 8px; padding: 28px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-.content h1 { font-size: 22px; color: #333; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; }
+
+body {
+  font-family: 'Rubik', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.header {
+  background: var(--bg-deeper);
+  color: var(--text-primary);
+  padding: 14px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--border-purple);
+}
+.header h1 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+.header a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  transition: color 0.15s;
+}
+.header a:hover { color: var(--lime); }
+
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 28px 32px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.meta-file {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  background: var(--bg-surface);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-purple);
+}
+
+.meta-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meta-status label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.meta-status select {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--deep-violet);
+  color: var(--text-primary);
+  border: 1px solid var(--border-purple);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+}
+.meta-status select:focus { border-color: var(--sentry-purple); }
+
+/* Content card */
+.content {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: 36px 40px;
+  border: 1px solid var(--border-purple);
+  box-shadow: rgba(22,15,36,0.9) 0px 4px 4px 9px;
+}
+
+/* Markdown rendered content */
+.content h1 {
+  font-size: 24px;
+  color: var(--text-primary);
+  margin: 28px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border-purple);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
 .content h1:first-child { margin-top: 0; }
-.content h2 { font-size: 18px; color: #4a90d9; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #e8e8e8; }
-.content h3 { font-size: 15px; color: #555; margin: 16px 0 8px; }
-.content p { margin: 8px 0; }
-.content ul, .content ol { padding-left: 24px; margin: 8px 0; }
-.content li { margin: 4px 0; }
-.content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
-.content th { background: #4a90d9; color: #fff; text-align: left; padding: 8px 12px; }
-.content td { padding: 7px 12px; border-bottom: 1px solid #e8e8e8; }
-.content tr:hover td { background: #f0f7ff; }
-.content code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 13px; font-family: Consolas, monospace; }
-.content pre { background: #f4f4f4; padding: 14px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }
-.content pre code { background: none; padding: 0; }
-.content blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px; margin: 12px 0; background: #fafafa; color: #555; }
-.content strong { color: #333; }
-.meta { color: #888; font-size: 13px; margin-bottom: 16px; }
-.footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 24px; padding: 12px; }
+
+.content h2 {
+  font-size: 19px;
+  color: var(--lime);
+  margin: 24px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(54,45,89,0.5);
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.content h3 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin: 20px 0 8px;
+  font-weight: 600;
+}
+
+.content h4 {
+  font-size: 14px;
+  color: var(--sentry-purple);
+  margin: 16px 0 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.content p { margin: 10px 0; line-height: 1.7; color: var(--text-secondary); }
+
+.content ul, .content ol {
+  padding-left: 24px;
+  margin: 10px 0;
+}
+.content li { margin: 5px 0; line-height: 1.6; }
+
+.content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 16px 0;
+  font-size: 13px;
+  border: 1px solid var(--border-purple);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.content th {
+  background: var(--bg-deeper);
+  color: var(--text-muted);
+  text-align: left;
+  padding: 9px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-purple);
+}
+
+.content td {
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(54,45,89,0.5);
+  color: var(--text-secondary);
+}
+
+.content tr:last-child td { border-bottom: none; }
+.content tr:hover td { background: rgba(106,95,193,0.06); }
+
+.content code {
+  background: var(--deep-violet);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  color: var(--lime);
+}
+
+.content pre {
+  background: var(--bg-deeper);
+  color: var(--text-secondary);
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 16px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid var(--border-purple);
+}
+.content pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+.content blockquote {
+  border-left: 3px solid var(--sentry-purple);
+  padding: 10px 18px;
+  margin: 16px 0;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.content strong { color: var(--text-primary); font-weight: 600; }
+
+.content a {
+  color: var(--sentry-purple);
+  text-decoration: none;
+}
+.content a:hover { color: var(--lime); text-decoration: underline; }
+
+.content hr {
+  border: none;
+  border-top: 1px solid var(--border-purple);
+  margin: 24px 0;
+}
+
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 28px;
+  padding: 12px;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+  .content { padding: 24px 20px; }
+  .header { padding: 12px 16px; }
+}
 </style>
 </head>
 <body>
 <div class="header">
   <h1>{{ title }}</h1>
-  <a href="/">&larr; Back to Dashboard</a>
+  <a href="/">&larr; Dashboard</a>
 </div>
 <div class="container">
-  <div class="meta">File: {{ filename }}</div>
+  <div class="meta">
+    <span class="meta-file">{{ filename }}</span>
+    <div class="meta-status">
+      <label>Status</label>
+      <select id="plan-status" onchange="updateStatus(this.value)">
+        <option value="not_started" {% if plan_status == 'not_started' %}selected{% endif %}>Not Started</option>
+        <option value="in_progress" {% if plan_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+        <option value="completed" {% if plan_status == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="deleted" {% if plan_status == 'deleted' %}selected{% endif %}>Delete</option>
+      </select>
+    </div>
+  </div>
   <div class="content">
     {{ content | safe }}
   </div>
-  <div class="footer">MyAIProduct Dashboard</div>
+  <div class="footer">Project Dashboard</div>
 </div>
+
+<script>
+function updateStatus(status) {
+  fetch('/api/plan/' + encodeURIComponent('{{ filename }}') + '/status', {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status: status})
+  }).then(r => r.json()).then(res => {
+    if (!res.ok) alert('Error: ' + (res.error || 'unknown'));
+  }).catch(err => alert('Error: ' + err));
+}
+</script>
 </body>
 </html>

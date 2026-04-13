@@ -5,61 +5,222 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Dashboard - Setup</title>
 <style>
+:root {
+  --bg-primary: #1f1633;
+  --bg-deeper: #150f23;
+  --bg-surface: #2a1f42;
+  --bg-elevated: #342a4e;
+  --sentry-purple: #6a5fc1;
+  --muted-purple: #79628c;
+  --deep-violet: #422082;
+  --border-purple: #362d59;
+  --lime: #c2ef4e;
+  --coral: #ffb287;
+  --pink: #fa7faa;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9a94b0;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 18px;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-.setup-card { background: #fff; border-radius: 12px; padding: 40px 48px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); max-width: 520px; width: 90%; }
-.setup-card h1 { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 6px; }
-.setup-card .subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
+body {
+  font-family: 'Rubik', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+}
 
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-.form-group input { width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
-.form-group input:focus { border-color: #4a90d9; }
-.form-group .hint { font-size: 11px; color: #aaa; margin-top: 4px; }
+.setup-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-purple);
+  border-radius: var(--radius-xl);
+  padding: 44px 52px;
+  max-width: 480px;
+  width: 90%;
+  backdrop-filter: blur(8px);
+  box-shadow: rgba(22,15,36,0.9) 0px 4px 4px 9px;
+}
+.setup-card h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+.setup-card h1 span { color: var(--lime); }
+.setup-card .subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
 
-.btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
-.btn-primary { background: #4a90d9; color: #fff; width: 100%; }
-.btn-primary:hover { background: #357abd; }
-.btn-primary:disabled { background: #bbb; cursor: not-allowed; }
+/* Purple dot */
+.setup-card h1::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--sentry-purple);
+  border-radius: 50%;
+  margin-right: 10px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+  box-shadow: 0 0 8px rgba(106,95,193,0.5);
+}
 
-.error { color: #c62828; font-size: 12px; margin-top: 8px; display: none; }
+.form-group { margin-bottom: 22px; }
+.form-group label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: 1px solid #cfcfdb;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  transition: box-shadow 0.15s;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+}
+.form-group input:focus {
+  box-shadow: rgba(0,0,0,0.15) 0px 2px 10px inset;
+}
+.form-group input::placeholder { color: #9a94b0; }
+.form-group .hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.btn {
+  padding: 11px 24px;
+  border: 1px solid #584674;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  transition: all 0.15s ease;
+  width: 100%;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--muted-purple);
+  color: var(--text-primary);
+  box-shadow: rgba(0,0,0,0.1) 0px 1px 3px 0px inset;
+}
+.btn-primary:hover {
+  box-shadow: rgba(0,0,0,0.18) 0px 0.5rem 1.5rem;
+}
+.btn-primary:disabled {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.error {
+  color: var(--pink);
+  font-size: 12px;
+  margin-bottom: 10px;
+  display: none;
+  padding: 8px 12px;
+  background: rgba(250,127,170,0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(250,127,170,0.2);
+}
 .error.show { display: block; }
 
-.current-ws { background: #f0f4f8; border-radius: 8px; padding: 14px; margin-bottom: 20px; }
-.current-ws .label { font-size: 11px; color: #888; }
-.current-ws .path { font-size: 13px; font-weight: 600; color: #333; margin-top: 2px; word-break: break-all; }
-.current-ws a { color: #4a90d9; font-size: 13px; text-decoration: none; display: inline-block; margin-top: 8px; }
-.current-ws a:hover { text-decoration: underline; }
+.current-ws {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border-purple);
+}
+.current-ws .label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.current-ws .path {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 4px;
+  word-break: break-all;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+}
+.current-ws a {
+  color: var(--lime);
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 500;
+  transition: color 0.1s;
+}
+.current-ws a:hover { color: var(--sentry-purple); }
 
-.footer { text-align: center; color: #aaa; font-size: 11px; margin-top: 20px; }
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 24px;
+  letter-spacing: 0.3px;
+}
 </style>
 </head>
 <body>
 
 <div class="setup-card">
-  <h1>Project Dashboard</h1>
-  <p class="subtitle">配置工作区目录，扫描并管理所有子项目</p>
+  <h1>Project <span>Dashboard</span></h1>
+  <p class="subtitle">Configure your workspace directory to scan and manage all sub-projects.</p>
 
   {% if current_workspace %}
   <div class="current-ws">
-    <div class="label">当前工作区</div>
+    <div class="label">Current Workspace</div>
     <div class="path">{{ current_workspace }}</div>
-    <a href="/">&rarr; 进入 Dashboard</a>
+    <a href="/">&rarr; Go to Dashboard</a>
   </div>
   {% endif %}
 
   <div class="form-group">
-    <label for="ws-path">工作区目录路径</label>
-    <input type="text" id="ws-path" placeholder="例如: C:\Projects\MyWorkspace" autofocus>
-    <div class="hint">输入包含多个子项目的目录路径，工具将自动扫描该目录下的所有项目</div>
+    <label for="ws-path">Workspace Directory</label>
+    <input type="text" id="ws-path" placeholder="/path/to/your/workspace" autofocus>
+    <div class="hint">Enter the directory containing your sub-projects. The scanner will detect all projects automatically.</div>
   </div>
 
   <div class="error" id="error-msg"></div>
 
-  <button class="btn btn-primary" id="scan-btn" onclick="startScan()">开始扫描</button>
+  <button class="btn btn-primary" id="scan-btn" onclick="startScan()">Start Scanning</button>
 
-  <div class="footer">Project Dashboard &mdash; 通用项目管理工具</div>
+  <div class="footer">Project Dashboard &mdash; Generic project management tool</div>
 </div>
 
 <script>
@@ -69,13 +230,13 @@ function startScan() {
   const errEl = document.getElementById('error-msg');
 
   if (!path) {
-    errEl.textContent = '请输入工作区目录路径';
+    errEl.textContent = 'Please enter a workspace directory path';
     errEl.classList.add('show');
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = '正在扫描...';
+  btn.textContent = 'SCANNING...';
   errEl.classList.remove('show');
 
   fetch('/api/workspace', {
@@ -86,20 +247,19 @@ function startScan() {
     if (res.ok) {
       window.location.href = '/';
     } else {
-      errEl.textContent = res.error || '扫描失败，请检查路径';
+      errEl.textContent = res.error || 'Scan failed, please check the path';
       errEl.classList.add('show');
       btn.disabled = false;
-      btn.textContent = '开始扫描';
+      btn.textContent = 'START SCANNING';
     }
   }).catch(err => {
-    errEl.textContent = '网络错误: ' + err;
+    errEl.textContent = 'Network error: ' + err;
     errEl.classList.add('show');
     btn.disabled = false;
-    btn.textContent = '开始扫描';
+    btn.textContent = 'START SCANNING';
   });
 }
 
-// Enter key triggers scan
 document.getElementById('ws-path').addEventListener('keydown', e => {
   if (e.key === 'Enter') startScan();
 });

@@ -21,7 +21,7 @@ python -m dashboard.scanner
 
 ## Architecture
 
-Three-layer design: **Config → Scanner → Server**
+Three-layer design: **Config -> Scanner -> Server**
 
 ```
 dashboard/
@@ -33,10 +33,10 @@ dashboard/
 
 ### Data flow
 
-1. **Startup**: `server.py` calls `migrate_legacy_config()` (one-time import from `projects_config.json` → `app_config.json`)
-2. **Request**: `GET /` → checks `config.get_workspace()` → no workspace? redirect `/setup` → has workspace? load `data/dashboard.json` → merge `plans_status.json` → group by category → render
-3. **Setup**: User enters directory path → `POST /api/workspace` → `config.set_workspace()` → `scanner.scan_all()` → redirect to dashboard
-4. **Rescan**: `POST /scan` → re-runs scanner with current config → redirect
+1. **Startup**: `server.py` calls `migrate_legacy_config()` (one-time import from `projects_config.json` -> `app_config.json`)
+2. **Request**: `GET /` -> checks `config.get_workspace()` -> no workspace? redirect `/setup` -> has workspace? load `data/dashboard.json` -> merge `plans_status.json` -> group by category -> render
+3. **Setup**: User enters directory path -> `POST /api/workspace` -> `config.set_workspace()` -> `scanner.scan_all()` -> redirect to dashboard
+4. **Rescan**: `POST /scan` -> re-runs scanner with current config -> redirect
 
 ### Path resolution
 
@@ -47,7 +47,16 @@ All paths derive from `__file__` relative positions — **no hardcoded absolute 
 
 Workspace and plans directory come from `app_config.json` at runtime.
 
-### Persistence files (in `data/`)
+### Design System
+
+UI uses a **dark header + light body** pattern (Sentry-inspired, blue palette):
+- Header: navy gradient (`#0f1a2e`), white text, lime-green title accent
+- Body: light blue-tinted white (`#f5f7fb`), white cards
+- Interactive: `#3b82f6` (brand blue), status colors: green/orange/gray/pink
+- Fonts: Rubik (system fallback), SF Mono for code/paths
+- CSS variables defined in `:root` block of each template
+
+### Persistence files (in `data/`, gitignored)
 
 | File | Purpose | Written by |
 |------|---------|-----------|

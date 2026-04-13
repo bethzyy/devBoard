@@ -5,119 +5,445 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Dashboard</title>
 <style>
+/* === Blue Edition: Dark Navy Header + Light Body === */
+:root {
+  /* Dark header (navy blue) */
+  --hdr-primary: #0f1a2e;
+  --hdr-deeper: #0a1220;
+  --hdr-border: #1e3355;
+
+  /* Light body */
+  --bg-primary: #f5f7fb;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eef1f8;
+  --border-light: #dde3ef;
+  --border-cool: #c8d0e0;
+
+  /* Brand Blues */
+  --brand-blue: #3b82f6;
+  --brand-muted: #5b8ad4;
+  --brand-deep: #1d4ed8;
+
+  /* Accents */
+  --lime: #5b9a1e;
+  --lime-bright: #c2ef4e;
+  --coral: #d4803a;
+  --pink: #c2557a;
+
+  /* Text */
+  --text-primary: #1f1633;
+  --text-secondary: #4a4560;
+  --text-muted: #8a84a0;
+
+  /* Semantic Status */
+  --active-bg: #eef7dd;
+  --active-text: #3d7a10;
+  --stale-bg: #fef3e6;
+  --stale-text: #b56e1a;
+  --complete-bg: #f0eff5;
+  --complete-text: #7a74a0;
+  --paused-bg: #fdeef3;
+  --paused-text: #b5446a;
+  --unknown-bg: #f5f4fa;
+  --unknown-text: #9a94b0;
+
+  /* Layout */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 18px;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, "Microsoft YaHei", "Segoe UI", sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; font-size: 14px; }
 
-.header { background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; }
-.header h1 { font-size: 20px; font-weight: 600; }
-.header-actions { display: flex; gap: 12px; align-items: center; }
-.header-actions span { font-size: 13px; opacity: 0.85; }
-.ws-path { font-size: 12px; opacity: 0.7; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
-.btn-primary { background: #fff; color: #4a90d9; }
-.btn-primary:hover { background: #e8f0fe; }
-.btn-sm { padding: 5px 10px; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; background: transparent; color: #fff; cursor: pointer; font-size: 12px; }
-.btn-sm:hover { background: rgba(255,255,255,0.15); }
+body {
+  font-family: 'Rubik', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* Modal */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+/* === Header === */
+.header {
+  background: linear-gradient(135deg, var(--hdr-primary) 0%, #162a48 100%);
+  color: #ffffff;
+  padding: 14px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--hdr-border);
+}
+.header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.header h1 span { color: var(--lime-bright); }
+.header-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.header-actions span {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+}
+.ws-path {
+  font-size: 11px;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  color: rgba(255,255,255,0.5);
+}
+
+/* === Buttons === */
+.btn {
+  padding: 7px 18px;
+  border: 1px solid var(--border-purple);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.btn-glass {
+  background: rgba(255,255,255,0.08);
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+}
+.btn-glass:hover {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.3);
+}
+.btn-rescan {
+  background: var(--brand-muted);
+  color: #ffffff;
+  border-color: #584674;
+  box-shadow: rgba(0,0,0,0.1) 0px 1px 3px 0px inset;
+}
+.btn-rescan:hover {
+  background: var(--brand-blue);
+  box-shadow: rgba(0,0,0,0.18) 0px 0.5rem 1.5rem;
+}
+
+/* === Modal === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(31,22,51,0.4);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
 .modal-overlay.show { display: flex; }
-.modal-card { background: #fff; border-radius: 10px; padding: 24px 28px; width: 420px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-.modal-card h3 { font-size: 16px; color: #333; margin-bottom: 14px; }
-.modal-card input { width: 100%; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 12px; }
-.modal-card input:focus { border-color: #4a90d9; }
-.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-.modal-btns .btn { font-size: 13px; padding: 7px 18px; }
-.btn-cancel { background: #f5f5f5; color: #666; }
-.btn-confirm { background: #4a90d9; color: #fff; }
-.btn-confirm:hover { background: #357abd; }
-.btn-confirm:disabled { background: #bbb; cursor: not-allowed; }
-.modal-error { color: #c62828; font-size: 12px; margin-bottom: 8px; display: none; }
+.modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  width: 440px;
+  max-width: 90%;
+  box-shadow: 0 8px 30px rgba(15,26,46,0.12);
+}
+.modal-card h3 {
+  font-size: 17px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+.modal-card input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-cool);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  outline: none;
+  margin-bottom: 14px;
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  transition: border-color 0.15s;
+}
+.modal-card input:focus {
+  border-color: var(--brand-blue);
+}
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-btns .btn { font-size: 11px; padding: 8px 20px; }
+.btn-cancel {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-purple);
+}
+.btn-cancel:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.btn-confirm {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-color: var(--brand-blue);
+}
+.btn-confirm:hover { background: var(--brand-deep); }
+.btn-confirm:disabled { background: var(--border-light); color: var(--text-muted); cursor: not-allowed; }
+.modal-error { color: var(--pink); font-size: 12px; margin-bottom: 10px; display: none; }
 
-.summary { max-width: 1600px; margin: 14px auto 0; padding: 0 28px; display: flex; gap: 10px; flex-wrap: wrap; }
-.summary-card { background: #fff; border-radius: 6px; padding: 10px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; align-items: baseline; gap: 6px; }
-.summary-card .num { font-size: 20px; font-weight: 700; }
-.summary-card .label { font-size: 12px; color: #888; }
-.c-green { color: #2e7d32; } .c-orange { color: #e65100; } .c-gray { color: #666; }
-.c-blue { color: #1565c0; } .c-purple { color: #7b1fa2; }
+/* === Summary Cards === */
+.summary {
+  max-width: 1600px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.summary-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 14px 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 3px rgba(15,26,46,0.05);
+}
+.summary-card:hover { border-color: var(--brand-blue); box-shadow: 0 2px 8px rgba(59,130,246,0.12); }
+.summary-card .num {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.summary-card .label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.c-lime { color: var(--active-text); }
+.c-coral { color: var(--stale-text); }
+.c-muted { color: var(--complete-text); }
+.c-purple { color: var(--brand-blue); }
+.c-pink { color: var(--paused-text); }
 
-.toolbar { max-width: 1600px; margin: 10px auto 0; padding: 0 28px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.toolbar input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; width: 200px; outline: none; }
-.toolbar input:focus { border-color: #4a90d9; }
-.fbtn { padding: 5px 12px; border: 1px solid #ddd; border-radius: 16px; background: #fff; cursor: pointer; font-size: 12px; }
-.fbtn:hover { border-color: #4a90d9; color: #4a90d9; }
-.fbtn.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+/* === Toolbar === */
+.toolbar {
+  max-width: 1600px;
+  margin: 16px auto 0;
+  padding: 0 32px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.toolbar input {
+  padding: 8px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-primary);
+  width: 240px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.toolbar input::placeholder { color: var(--text-muted); }
+.toolbar input:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
 
-.main { max-width: 1600px; margin: 12px auto; padding: 0 28px; }
+.fbtn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.fbtn:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+.fbtn.active {
+  background: var(--brand-blue);
+  color: var(--text-primary);
+  border-color: var(--brand-blue);
+}
 
-/* Table */
-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-th { background: #4a90d9; color: #fff; text-align: left; padding: 8px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; font-size: 13px; }
+/* === Main Table === */
+.main {
+  max-width: 1600px;
+  margin: 16px auto;
+  padding: 0 32px;
+}
 
-/* Group header */
-.grp-row td { background: #f0f4f8; padding: 8px 12px; font-weight: 600; font-size: 13px; color: #4a90d9; cursor: pointer; border-bottom: 2px solid #d0dae6; }
-.grp-row:hover td { background: #e4ecf4; }
-.grp-arrow { display: inline-block; width: 16px; transition: transform 0.2s; }
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 1px 4px rgba(15,26,46,0.04);
+}
+
+th {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-light);
+}
+
+td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: top;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* === Group Headers === */
+.grp-row td {
+  background: var(--bg-elevated);
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--brand-blue);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  transition: background 0.15s;
+}
+.grp-row:hover td { background: #dde3ef; }
+.grp-arrow { display: inline-block; width: 16px; transition: transform 0.2s ease; }
 .grp-arrow.collapsed { transform: rotate(-90deg); }
-.grp-count { font-weight: 400; color: #888; font-size: 12px; margin-left: 6px; }
+.grp-count { font-weight: 400; color: var(--text-muted); font-size: 11px; margin-left: 6px; text-transform: none; letter-spacing: 0; }
 
-/* Project row */
-.proj-row td { padding: 6px 12px; }
-.proj-row:hover td { background: #f8fbff; }
-.proj-name { font-weight: 600; color: #333; white-space: nowrap; }
+/* === Project Rows === */
+.proj-row td { padding: 7px 14px; transition: background 0.1s; }
+.proj-row:hover td { background: rgba(59,130,246,0.04); }
+.proj-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.2px; }
 
-/* Status */
-.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-.b-active { background: #e8f5e9; color: #2e7d32; }
-.b-stale { background: #fff3e0; color: #e65100; }
-.b-complete { background: #f5f5f5; color: #666; }
-.b-paused { background: #ffebee; color: #c62828; }
-.b-unknown { background: #fafafa; color: #aaa; }
-.b-type { background: #e8eaf6; color: #3949ab; font-size: 11px; }
+/* === Status Badges === */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.b-active { background: var(--active-bg); color: var(--active-text); }
+.b-stale { background: var(--stale-bg); color: var(--stale-text); }
+.b-complete { background: var(--complete-bg); color: var(--complete-text); }
+.b-paused { background: var(--paused-bg); color: var(--paused-text); }
+.b-unknown { background: var(--unknown-bg); color: var(--unknown-text); }
+.b-type { background: rgba(59,130,246,0.1); color: var(--brand-blue); font-size: 10px; }
 
-/* Days */
-.d-fresh { color: #2e7d32; font-weight: 600; }
-.d-ok { color: #e65100; }
-.d-old { color: #c62828; }
+/* === Activity Age === */
+.d-fresh { color: var(--lime); font-weight: 600; }
+.d-ok { color: var(--coral); font-weight: 500; }
+.d-old { color: var(--pink); font-weight: 500; }
 
-/* Docs column */
-.docs-cell { max-width: 500px; }
-.doc-list { display: flex; flex-direction: column; gap: 2px; }
-.doc-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 12px; line-height: 1.4; }
-.doc-item a { color: #4a90d9; text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.doc-item a:hover { text-decoration: underline; }
-.doc-item .doc-status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.dot-not_started { background: #ccc; }
-.dot-in_progress { background: #1565c0; }
-.dot-completed { background: #2e7d32; }
-.dot-deleted { background: #e0e0e0; }
-.doc-status-select { font-size: 10px; padding: 0 2px; border: 1px solid #ddd; border-radius: 3px; background: #fff; cursor: pointer; flex-shrink: 0; }
-.doc-more { font-size: 11px; color: #888; padding: 2px 0; cursor: pointer; }
-.doc-more:hover { color: #4a90d9; }
+/* === Plan/Docs Column === */
+.docs-cell { max-width: 480px; }
+.doc-list { display: flex; flex-direction: column; gap: 3px; }
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.doc-item a {
+  color: var(--brand-blue);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.1s;
+}
+.doc-item a:hover { color: var(--brand-deep); text-decoration: underline; }
+.doc-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-not_started { background: #c5c3d5; }
+.dot-in_progress { background: var(--brand-blue); }
+.dot-completed { background: var(--lime); }
+.dot-deleted { background: #e0dfe8; }
+.doc-status-select {
+  font-size: 10px;
+  padding: 1px 3px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.doc-status-select:focus { border-color: var(--brand-blue); outline: none; }
 
-.footer { text-align: center; color: #aaa; font-size: 11px; margin-top: 24px; padding: 12px; }
+/* === Footer === */
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin: 32px 0 16px;
+  padding: 12px;
+  letter-spacing: 0.3px;
+}
 
-/* Hidden rows when group collapsed */
+/* === Hidden rows when group collapsed === */
 .proj-row.hidden { display: none; }
 
+/* === Responsive === */
 @media (max-width: 768px) {
-  .main, .toolbar, .summary { padding: 0 12px; }
-  .header { padding: 12px; }
+  .main, .toolbar, .summary { padding: 0 16px; }
+  .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
   .docs-cell { max-width: 200px; }
+  .summary { gap: 8px; }
+  .summary-card { padding: 10px 16px; }
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Project Dashboard</h1>
+  <h1>Project <span>Dashboard</span></h1>
   <div class="header-actions">
     <span class="ws-path" title="{{ data.workspace }}">{{ data.workspace }}</span>
-    <button class="btn-sm" onclick="showWsDialog()">切换工作区</button>
+    <button class="btn btn-glass" onclick="showWsDialog()">Switch Workspace</button>
     <span>{{ data.scan_time }}</span>
     <form method="POST" action="/scan" style="display:inline">
-      <button type="submit" class="btn btn-primary">重新扫描</button>
+      <button type="submit" class="btn btn-rescan">Rescan</button>
     </form>
   </div>
 </div>
@@ -125,53 +451,53 @@ td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; f
 <!-- Workspace switch modal -->
 <div class="modal-overlay" id="ws-modal">
   <div class="modal-card">
-    <h3>切换工作区</h3>
+    <h3>Switch Workspace</h3>
     <div class="modal-error" id="ws-error"></div>
-    <input type="text" id="ws-input" placeholder="输入新的工作区目录路径...">
+    <input type="text" id="ws-input" placeholder="/path/to/your/workspace">
     <div class="modal-btns">
-      <button class="btn btn-cancel" onclick="hideWsDialog()">取消</button>
-      <button class="btn btn-confirm" id="ws-confirm" onclick="switchWorkspace()">确认</button>
+      <button class="btn btn-cancel" onclick="hideWsDialog()">Cancel</button>
+      <button class="btn btn-confirm" id="ws-confirm" onclick="switchWorkspace()">Confirm</button>
     </div>
   </div>
 </div>
 
 <div class="summary">
-  <div class="summary-card"><span class="num">{{ data.total_projects }}</span><span class="label">项目</span></div>
-  <div class="summary-card"><span class="num c-green">{{ data.summary.active }}</span><span class="label">活跃</span></div>
-  <div class="summary-card"><span class="num c-orange">{{ data.summary.stale }}</span><span class="label">停滞</span></div>
-  <div class="summary-card"><span class="num c-gray">{{ data.summary.complete }}</span><span class="label">完成</span></div>
-  <div class="summary-card"><span class="num c-blue">{{ data.summary.total_todos }}</span><span class="label">TODO</span></div>
-  <div class="summary-card"><span class="num c-purple">{{ data.total_plans }}</span><span class="label">计划</span></div>
+  <div class="summary-card"><span class="num">{{ data.total_projects }}</span><span class="label">Projects</span></div>
+  <div class="summary-card"><span class="num c-lime">{{ data.summary.active }}</span><span class="label">Active</span></div>
+  <div class="summary-card"><span class="num c-coral">{{ data.summary.stale }}</span><span class="label">Stale</span></div>
+  <div class="summary-card"><span class="num c-muted">{{ data.summary.complete }}</span><span class="label">Complete</span></div>
+  <div class="summary-card"><span class="num c-purple">{{ data.summary.total_todos }}</span><span class="label">TODOs</span></div>
+  <div class="summary-card"><span class="num c-pink">{{ data.total_plans }}</span><span class="label">Plans</span></div>
 </div>
 
 <div class="toolbar">
-  <input type="text" placeholder="搜索项目 / 文档..." id="search">
-  <button class="fbtn active" data-f="all">全部</button>
-  <button class="fbtn" data-f="active">活跃</button>
-  <button class="fbtn" data-f="stale">停滞</button>
-  <button class="fbtn" data-f="complete">完成</button>
-  <button class="fbtn" data-f="has-docs">有文档</button>
+  <input type="text" placeholder="Search projects, plans..." id="search">
+  <button class="fbtn active" data-f="all">All</button>
+  <button class="fbtn" data-f="active">Active</button>
+  <button class="fbtn" data-f="stale">Stale</button>
+  <button class="fbtn" data-f="complete">Complete</button>
+  <button class="fbtn" data-f="has-docs">Has Plans</button>
 </div>
 
 <div class="main">
 <table>
 <thead>
 <tr>
-  <th style="width:140px">分类 / 项目</th>
-  <th>相关文档</th>
-  <th style="width:70px">状态</th>
-  <th style="width:55px">活跃</th>
-  <th style="width:90px">类型</th>
-  <th style="width:90px">技术栈</th>
-  <th style="width:55px">版本</th>
-  <th style="width:40px">TODO</th>
+  <th style="width:150px">Category / Project</th>
+  <th>Plans</th>
+  <th style="width:75px">Status</th>
+  <th style="width:55px">Active</th>
+  <th style="width:95px">Type</th>
+  <th style="width:95px">Stack</th>
+  <th style="width:55px">Version</th>
+  <th style="width:45px">TODO</th>
 </tr>
 </thead>
 <tbody id="tbody">
 {% for cat, projects in data.groups.items() %}
 <tr class="grp-row" onclick="toggleGroup(this)">
   <td colspan="8">
-    <span class="grp-arrow">▼</span> {{ cat }}
+    <span class="grp-arrow">&#9660;</span> {{ cat }}
     <span class="grp-count">({{ projects | length }})</span>
   </td>
 </tr>
@@ -188,28 +514,28 @@ td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; f
         <span class="doc-status-dot dot-{{ plan.user_status }}"></span>
         <a href="/plan/{{ plan.filename }}" title="{{ plan.title or plan.filename }}">{{ plan.title or plan.filename }}</a>
         <select class="doc-status-select" onchange="setPlanStatus('{{ plan.filename }}',this.value,this)">
-          <option value="not_started" {{ 'selected' if plan.user_status == 'not_started' }}>未开始</option>
-          <option value="in_progress" {{ 'selected' if plan.user_status == 'in_progress' }}>进行中</option>
-          <option value="completed" {{ 'selected' if plan.user_status == 'completed' }}>已完成</option>
-          <option value="deleted" {{ 'selected' if plan.user_status == 'deleted' }}>删除</option>
+          <option value="not_started" {{ 'selected' if plan.user_status == 'not_started' }}>Not Started</option>
+          <option value="in_progress" {{ 'selected' if plan.user_status == 'in_progress' }}>In Progress</option>
+          <option value="completed" {{ 'selected' if plan.user_status == 'completed' }}>Completed</option>
+          <option value="deleted" {{ 'selected' if plan.user_status == 'deleted' }}>Delete</option>
         </select>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <span style="color:#ddd;font-size:12px">-</span>
+    <span style="color:var(--text-muted);font-size:12px">&mdash;</span>
     {% endif %}
   </td>
   <td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td>
   <td>
     {% if p.days_since_activity is not none %}
     <span class="{{ 'd-fresh' if p.days_since_activity <= 7 else ('d-ok' if p.days_since_activity <= 30 else 'd-old') }}">{{ p.days_since_activity }}d</span>
-    {% else %}<span style="color:#ddd">-</span>{% endif %}
+    {% else %}<span style="color:var(--text-muted)">&mdash;</span>{% endif %}
   </td>
   <td><span class="badge b-type">{{ p.project_type or '-' }}</span></td>
-  <td style="font-size:12px">{{ p.tech_stack[:3] | join(', ') }}</td>
-  <td style="font-size:12px">{{ p.version or '-' }}</td>
-  <td>{% if p.todo_count %}<span style="color:#1565c0;font-weight:600">{{ p.todo_count }}</span>{% else %}0{% endif %}</td>
+  <td style="font-size:12px;color:var(--text-muted)">{{ p.tech_stack[:3] | join(', ') }}</td>
+  <td style="font-size:12px;color:var(--text-muted);font-family:'SF Mono','Fira Code',Consolas,monospace">{{ p.version or '-' }}</td>
+  <td>{% if p.todo_count %}<span style="color:var(--active-text);font-weight:600">{{ p.todo_count }}</span>{% else %}<span style="color:var(--text-muted)">0</span>{% endif %}</td>
 </tr>
 {% endfor %}
 {% endfor %}
@@ -217,7 +543,7 @@ td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; f
 </table>
 </div>
 
-<div class="footer">Project Dashboard — {{ data.scan_time }}</div>
+<div class="footer">Project Dashboard &mdash; {{ data.scan_time }}</div>
 
 <script>
 function toggleGroup(row) {
@@ -250,8 +576,7 @@ function setPlanStatus(filename, status, selectEl) {
   }).catch(err => alert('Error: ' + err));
 }
 
-// Filters
-// Workspace dialog
+/* Workspace dialog */
 function showWsDialog() {
   document.getElementById('ws-modal').classList.add('show');
   document.getElementById('ws-input').value = '';
@@ -264,7 +589,7 @@ function switchWorkspace() {
   const path = document.getElementById('ws-input').value.trim();
   const errEl = document.getElementById('ws-error');
   const btn = document.getElementById('ws-confirm');
-  if (!path) { errEl.textContent = '请输入路径'; errEl.style.display = 'block'; return; }
+  if (!path) { errEl.textContent = 'Please enter a path'; errEl.style.display = 'block'; return; }
   btn.disabled = true;
   errEl.style.display = 'none';
   fetch('/api/workspace', {
@@ -273,11 +598,12 @@ function switchWorkspace() {
     body: JSON.stringify({path: path})
   }).then(r => r.json()).then(res => {
     if (res.ok) location.reload();
-    else { errEl.textContent = res.error || '失败'; errEl.style.display = 'block'; btn.disabled = false; }
-  }).catch(err => { errEl.textContent = '网络错误: ' + err; errEl.style.display = 'block'; btn.disabled = false; });
+    else { errEl.textContent = res.error || 'Failed'; errEl.style.display = 'block'; btn.disabled = false; }
+  }).catch(err => { errEl.textContent = 'Network error: ' + err; errEl.style.display = 'block'; btn.disabled = false; });
 }
 document.getElementById('ws-modal').addEventListener('click', e => { if (e.target === e.currentTarget) hideWsDialog(); });
 
+/* Filters */
 document.querySelectorAll('.fbtn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
@@ -300,7 +626,6 @@ function applyFilters() {
     if (q && !t.includes(q)) show = false;
     row.style.display = show ? '' : 'none';
   });
-  // Update group counts visibility
   document.querySelectorAll('.grp-row').forEach(grp => {
     let next = grp.nextElementSibling;
     let anyVisible = false;
