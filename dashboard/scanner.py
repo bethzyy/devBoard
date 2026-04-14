@@ -663,6 +663,8 @@ def scan_all(workspace_path=None, plans_dir=None, project_config=None):
             proj["status"] = derive_status(proj["days_since_activity"])
         if "paused_reason" in cfg:
             proj["paused_reason"] = cfg["paused_reason"]
+        if "description" in cfg:
+            proj["description"] = cfg["description"]
 
         # Assign plans
         # Match by exact name (case-insensitive)
