@@ -10,8 +10,15 @@ A generic project dashboard that scans a workspace directory, detects sub-projec
 - **Status tracking**: Derives project status (active/stale/complete) from activity signals, with manual override
 - **Plan status management**: Mark plans as not started, in progress, completed, or soft-deleted
 - **Filtering & search**: Filter by status, search across project names, descriptions, and plans
+- **Expandable detail panels**: Click to expand Health Score, Plans progress, Quick Stats, and Next Steps
+- **Inline editing**: Change Priority (H/M/L) and Status directly in the table, values persist across scans
+- **Column sorting**: Click any column header to sort within groups
 - **Configurable workspace**: Set workspace path via browser, persists across restarts
 - **Modern UI**: Dark navy header + light body design, Sentry-inspired blue color system with green status accents
+
+## Screenshot
+
+![devBoard Dashboard](docs/screenshot.png)
 
 ## Quick Start
 
@@ -88,6 +95,8 @@ The UI follows a **dark header + light body** pattern, inspired by the Sentry de
 | POST | `/api/workspace` | Set workspace path (triggers scan) |
 | DELETE | `/api/workspace` | Reset workspace |
 | PATCH | `/api/plan/<filename>/status` | Update plan status |
+| PATCH | `/api/project/<name>/priority` | Update project priority (high/medium/low) |
+| PATCH | `/api/project/<name>/status` | Update project status override |
 | GET | `/api/data` | Raw JSON scan data |
 
 ## License
