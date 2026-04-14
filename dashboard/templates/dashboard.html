@@ -170,8 +170,12 @@ table {
 th {
   background: var(--bg-elevated); color: var(--text-muted); text-align: left; padding: 10px 14px;
   font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-  white-space: nowrap; border-bottom: 1px solid var(--border-light);
+  white-space: nowrap; border-bottom: 1px solid var(--border-light); user-select: none;
 }
+th.sortable { cursor: pointer; transition: color 0.1s; }
+th.sortable:hover { color: var(--brand-blue); }
+th.sort-asc::after { content: ' \25B2'; font-size: 8px; color: var(--brand-blue); }
+th.sort-desc::after { content: ' \25BC'; font-size: 8px; color: var(--brand-blue); }
 td {
   padding: 8px 14px; border-bottom: 1px solid var(--border-light); vertical-align: top;
   font-size: 13px; color: var(--text-secondary);
@@ -198,11 +202,13 @@ td {
 .proj-row:hover td { background: rgba(59,130,246,0.04); }
 .proj-row.expanded td { background: rgba(59,130,246,0.06); border-left: 3px solid var(--brand-blue); }
 .proj-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.2px; }
-.priority-dot {
-  display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle;
+.priority-badge {
+  display: inline-block; padding: 1px 7px; border-radius: var(--radius-pill);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
 }
-.priority-high { background: var(--health-red); box-shadow: 0 0 4px rgba(239,68,68,0.3); }
-.priority-medium { background: var(--health-amber); }
+.priority-badge-H { background: rgba(239,68,68,0.12); color: #dc2626; }
+.priority-badge-M { background: rgba(245,158,11,0.12); color: #d97706; }
+.priority-badge-L { background: var(--bg-elevated); color: var(--text-muted); }
 
 /* === Introduction Column === */
 .intro-text {
@@ -410,40 +416,44 @@ td {
 <thead>
 <tr>
   <th style="width:28px"></th>
-  <th style="width:150px">Category / Project</th>
-  <th>Introduction</th>
-  <th style="width:75px">Status</th>
-  <th style="width:55px">Active</th>
-  <th style="width:95px">Type</th>
-  <th style="width:95px">Stack</th>
-  <th style="width:55px">Version</th>
-  <th style="width:45px">TODO</th>
+  <th class="sortable" style="width:150px" data-sort="name">Project</th>
+  <th class="sortable" data-sort="intro">Introduction</th>
+  <th class="sortable" style="width:60px" data-sort="priority">Priority</th>
+  <th class="sortable" style="width:75px" data-sort="status">Status</th>
+  <th class="sortable" style="width:55px" data-sort="active">Active</th>
+  <th class="sortable" style="width:95px" data-sort="type">Type</th>
+  <th class="sortable" style="width:95px" data-sort="stack">Stack</th>
+  <th class="sortable" style="width:55px" data-sort="version">Version</th>
+  <th class="sortable" style="width:45px" data-sort="todo">TODO</th>
 </tr>
 </thead>
 <tbody id="tbody">
 {% for cat, projects in data.groups.items() %}
 <tr class="grp-row" onclick="toggleGroup(this)">
-  <td colspan="9">
+  <td colspan="10">
     <span class="grp-arrow">&#9660;</span> {{ cat }}
     <span class="grp-count">({{ projects | length }})</span>
   </td>
 </tr>
 {% for p in projects %}
 <tr class="proj-row" data-status="{{ p.status }}" data-plans="{{ p.plan_count }}"
-    data-name="{{ p.name }}"
+    data-name="{{ p.name }}" data-priority="{{ p.priority or 'low' }}"
+    data-active="{{ p.days_since_activity if p.days_since_activity is not none else 999 }}"
+    data-todo="{{ p.todo_count }}"
     data-search="{{ p.name }} {{ p.description or '' }} {{ p.tech_stack | join(' ') }} {{ cat }}
     {% for pl in p.plans %}{{ pl.title or '' }} {% endfor %}"
     onclick="toggleDetail(this)">
   <td><span class="chevron" id="chevron-{{ p.name }}">&#9654;</span></td>
   <td>
-    <span class="proj-name">
-      {% if p.priority == 'high' %}<span class="priority-dot priority-high"></span>
-      {% elif p.priority == 'medium' %}<span class="priority-dot priority-medium"></span>{% endif %}
-      {{ p.name }}
-    </span>
+    <span class="proj-name">{{ p.name }}</span>
   </td>
   <td>
     <div class="intro-text">{{ p.description or '-' }}</div>
+  </td>
+  <td>
+    {% if p.priority == 'high' %}<span class="priority-badge priority-badge-H">H</span>
+    {% elif p.priority == 'medium' %}<span class="priority-badge priority-badge-M">M</span>
+    {% else %}<span class="priority-badge priority-badge-L">L</span>{% endif %}
   </td>
   <td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td>
   <td>
@@ -549,7 +559,7 @@ function buildDetailRow(name) {
   const tr = document.createElement('tr');
   tr.id = 'detail-' + name;
   tr.className = 'detail-row hidden';
-  tr.innerHTML = `<td colspan="9">
+  tr.innerHTML = `<td colspan="10">
     <div class="detail-wrapper">
       <div class="detail-inner">
         <div class="detail-content">
@@ -793,6 +803,83 @@ function applyFilters() {
       next = next.nextElementSibling;
     }
     grp.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+/* === Column Sorting === */
+let currentSort = null;
+let currentSortDir = 'asc';
+
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const col = th.dataset.sort;
+    if (currentSort === col) {
+      currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort = col;
+      currentSortDir = 'asc';
+    }
+    /* Update header indicators */
+    document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+    th.classList.add(currentSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    sortProjects();
+  });
+});
+
+function getSortValue(row, col) {
+  const name = row.dataset.name;
+  const p = PROJECT_DATA[name];
+  if (!p) return '';
+  switch (col) {
+    case 'name': return (p.name || '').toLowerCase();
+    case 'intro': return (p.description || '').toLowerCase();
+    case 'priority': {
+      const pri = (p.priority || 'low').toLowerCase();
+      return pri === 'high' ? '0' : pri === 'medium' ? '1' : '2';
+    }
+    case 'status': return p.status || '';
+    case 'active': return String(p.days_since_activity === null || p.days_since_activity === undefined ? 999 : p.days_since_activity).padStart(4, '0');
+    case 'type': return (p.project_type || '').toLowerCase();
+    case 'stack': return (p.tech_stack || []).join(',').toLowerCase();
+    case 'version': return p.version || 'zzz';
+    case 'todo': return String(p.todo_count || 0).padStart(4, '0');
+    default: return '';
+  }
+}
+
+function sortProjects() {
+  if (!currentSort) return;
+  /* Collapse expanded panel */
+  if (currentExpanded) collapseProject(currentExpanded);
+
+  document.querySelectorAll('.grp-row').forEach(grp => {
+    const rows = [];
+    let next = grp.nextElementSibling;
+    while (next && !next.classList.contains('grp-row')) {
+      if (next.classList.contains('proj-row')) rows.push(next);
+      next = next.nextElementSibling;
+    }
+    /* Sort proj-rows within this group */
+    rows.sort((a, b) => {
+      const va = getSortValue(a, currentSort);
+      const vb = getSortValue(b, currentSort);
+      const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+      return currentSortDir === 'asc' ? cmp : -cmp;
+    });
+    /* Re-insert rows after group header, moving detail rows with their project */
+    let insertAfter = grp;
+    for (const row of rows) {
+      const detailRow = document.getElementById('detail-' + row.dataset.name);
+      /* Move proj row */
+      insertAfter.after(row);
+      insertAfter = row;
+      /* Move detail row if it exists */
+      if (detailRow) {
+        insertAfter.after(detailRow);
+        insertAfter = detailRow;
+      }
+    }
   });
 }
 </script>
