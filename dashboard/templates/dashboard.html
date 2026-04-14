@@ -198,10 +198,11 @@ td {
   font-size: 11px; cursor: pointer; user-select: none;
 }
 .chevron.expanded { transform: rotate(90deg); color: var(--brand-blue); }
-.proj-row td { padding: 7px 14px; transition: background 0.1s; }
+.proj-row td { padding: 7px 14px; transition: background 0.15s, border-color 0.15s; }
 .proj-row:hover td { background: rgba(59,130,246,0.03); }
-.proj-row.expanded td { background: rgba(59,130,246,0.04); }
-.proj-row.expanded td:first-child { border-left: 2px solid var(--brand-blue); }
+.proj-row.expanded td { background: rgba(59,130,246,0.08); border-bottom-color: transparent; }
+.proj-row.expanded + .detail-row td { border-top: none; }
+.proj-row.expanded .proj-name { color: var(--brand-blue); }
 .clickable { cursor: pointer; }
 .proj-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.2px; cursor: pointer; }
 .proj-name:hover { color: var(--brand-blue); }
@@ -221,8 +222,8 @@ td {
 }
 
 /* === Detail Panel (Expandable Row) === */
-.detail-row { border-bottom: 1px solid var(--border-light); }
-.detail-row > td { padding: 0 !important; }
+.detail-row { }
+.detail-row > td { padding: 0 !important; background: rgba(59,130,246,0.04); }
 .detail-wrapper {
   display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease-out;
 }
@@ -230,8 +231,8 @@ td {
 .detail-inner { overflow: hidden; min-height: 0; }
 .detail-content {
   display: grid; grid-template-columns: 3fr 2fr; gap: 24px; padding: 20px 28px;
-  max-width: 100%; background: linear-gradient(135deg, #f8f9fc 0%, #f0f4fa 100%);
-  border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
+  max-width: 100%; background: linear-gradient(180deg, rgba(59,130,246,0.04) 0%, rgba(59,130,246,0.01) 100%);
+  border-bottom: 2px solid var(--brand-blue);
 }
 
 /* Panel sections */
