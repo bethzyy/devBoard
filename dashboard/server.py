@@ -322,6 +322,84 @@ def delete_plan(filename):
     return jsonify({"ok": True, "filename": filename})
 
 
+# === Project Field API ===
+
+@app.route("/api/project/<name>/priority", methods=["PATCH"])
+def update_project_priority(name):
+    """Update a project's priority (persisted to app_config.json)."""
+    body = request.get_json(silent=True)
+    if not body or "priority" not in body:
+        return jsonify({"error": "Missing 'priority' field"}), 400
+
+    new_priority = body["priority"]
+    valid = {"high", "medium", "low"}
+    if new_priority not in valid:
+        return jsonify({"error": f"Invalid priority. Must be one of: {valid}"}), 400
+
+    ws = get_workspace()
+    if ws is None:
+        return jsonify({"error": "No workspace configured"}), 400
+
+    cfg = load_config()
+    ws_key = str(ws).replace("\\", "/")
+    proj = cfg.get("workspaces", {}).get(ws_key, {}).get("projects", {}).get(name)
+    if proj is None:
+        return jsonify({"error": f"Project '{name}' not found"}), 404
+
+    proj["priority"] = new_priority
+    save_config(cfg)
+
+    # Also update the live dashboard.json
+    data = load_data()
+    if data:
+        for p in data.get("projects", []):
+            if p["name"] == name:
+                p["priority"] = new_priority
+                break
+        with open(DASHBOARD_JSON, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True, "name": name, "priority": new_priority})
+
+
+@app.route("/api/project/<name>/status", methods=["PATCH"])
+def update_project_status(name):
+    """Update a project's status override (persisted to app_config.json)."""
+    body = request.get_json(silent=True)
+    if not body or "status" not in body:
+        return jsonify({"error": "Missing 'status' field"}), 400
+
+    new_status = body["status"]
+    valid = {"active", "stale", "complete", "paused", "unknown"}
+    if new_status not in valid:
+        return jsonify({"error": f"Invalid status. Must be one of: {valid}"}), 400
+
+    ws = get_workspace()
+    if ws is None:
+        return jsonify({"error": "No workspace configured"}), 400
+
+    cfg = load_config()
+    ws_key = str(ws).replace("\\", "/")
+    proj = cfg.get("workspaces", {}).get(ws_key, {}).get("projects", {}).get(name)
+    if proj is None:
+        return jsonify({"error": f"Project '{name}' not found"}), 404
+
+    proj["status_override"] = new_status
+    save_config(cfg)
+
+    # Also update the live dashboard.json
+    data = load_data()
+    if data:
+        for p in data.get("projects", []):
+            if p["name"] == name:
+                p["status"] = new_status
+                break
+        with open(DASHBOARD_JSON, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True, "name": name, "status": new_status})
+
+
 @app.route("/api/data")
 def api_data():
     """JSON API endpoint."""

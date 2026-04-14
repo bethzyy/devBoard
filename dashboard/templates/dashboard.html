@@ -337,6 +337,25 @@ td {
 .b-unknown { background: var(--unknown-bg); color: var(--unknown-text); }
 .b-type { background: rgba(59,130,246,0.1); color: var(--brand-blue); font-size: 10px; }
 
+/* Inline edit selects (look like badges) */
+.inline-select {
+  border: 1px solid transparent; border-radius: var(--radius-pill);
+  padding: 1px 4px; font-size: 10px; font-weight: 600; cursor: pointer;
+  outline: none; appearance: none; -webkit-appearance: none;
+  text-transform: uppercase; letter-spacing: 0.2px;
+  background-clip: padding-box; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.inline-select:hover { border-color: var(--border-cool); }
+.inline-select:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.sel-priority-H { background: rgba(239,68,68,0.12); color: #dc2626; }
+.sel-priority-M { background: rgba(245,158,11,0.12); color: #d97706; }
+.sel-priority-L { background: var(--bg-elevated); color: var(--text-muted); }
+.sel-status-active { background: var(--active-bg); color: var(--active-text); }
+.sel-status-stale { background: var(--stale-bg); color: var(--stale-text); }
+.sel-status-complete { background: var(--complete-bg); color: var(--complete-text); }
+.sel-status-paused { background: var(--paused-bg); color: var(--paused-text); }
+.sel-status-unknown { background: var(--unknown-bg); color: var(--unknown-text); }
+
 /* === Activity Age === */
 .d-fresh { color: var(--lime); font-weight: 600; }
 .d-ok { color: var(--coral); font-weight: 500; }
@@ -451,11 +470,25 @@ td {
     <div class="intro-text">{{ p.description or '-' }}</div>
   </td>
   <td>
-    {% if p.priority == 'high' %}<span class="priority-badge priority-badge-H">H</span>
-    {% elif p.priority == 'medium' %}<span class="priority-badge priority-badge-M">M</span>
-    {% else %}<span class="priority-badge priority-badge-L">L</span>{% endif %}
+    <select class="inline-select sel-priority-{% if (p.priority or 'low') == 'high' %}H{% elif (p.priority or 'low') == 'medium' %}M{% else %}L{% endif %}"
+            data-field="priority" data-name="{{ p.name }}"
+            onchange="updateProjectField(this, 'priority')">
+      <option value="high" {{ 'selected' if (p.priority or 'low') == 'high' }}>H</option>
+      <option value="medium" {{ 'selected' if (p.priority or 'low') == 'medium' }}>M</option>
+      <option value="low" {{ 'selected' if (p.priority or 'low') == 'low' }}>L</option>
+    </select>
   </td>
-  <td><span class="badge b-{{ p.status }}">{{ p.status }}</span></td>
+  <td>
+    <select class="inline-select sel-status-{{ p.status }}"
+            data-field="status" data-name="{{ p.name }}"
+            onchange="updateProjectField(this, 'status')">
+      <option value="active" {{ 'selected' if p.status == 'active' }}>active</option>
+      <option value="stale" {{ 'selected' if p.status == 'stale' }}>stale</option>
+      <option value="complete" {{ 'selected' if p.status == 'complete' }}>complete</option>
+      <option value="paused" {{ 'selected' if p.status == 'paused' }}>paused</option>
+      <option value="unknown" {{ 'selected' if p.status == 'unknown' }}>unknown</option>
+    </select>
+  </td>
   <td>
     {% if p.days_since_activity is not none %}
     <span class="{{ 'd-fresh' if p.days_since_activity <= 7 else ('d-ok' if p.days_since_activity <= 30 else 'd-old') }}">{{ p.days_since_activity }}d</span>
@@ -880,6 +913,44 @@ function sortProjects() {
         insertAfter = detailRow;
       }
     }
+  });
+}
+
+/* === Inline project field editing === */
+function updateProjectField(sel, field) {
+  const name = sel.dataset.name;
+  const value = sel.value;
+  const url = '/api/project/' + encodeURIComponent(name) + '/' + field;
+
+  fetch(url, {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({[field]: value})
+  }).then(r => r.json()).then(res => {
+    if (res.ok) {
+      /* Update PROJECT_DATA in memory */
+      if (PROJECT_DATA[name]) {
+        PROJECT_DATA[name][field === 'status' ? 'status' : 'priority'] = value;
+      }
+      /* Update CSS class on select */
+      if (field === 'priority') {
+        sel.className = 'inline-select sel-priority-' + value[0].toUpperCase();
+      } else {
+        sel.className = 'inline-select sel-status-' + value;
+      }
+      /* Update data attributes for sorting/filtering */
+      const row = sel.closest('.proj-row');
+      if (row) {
+        if (field === 'status') row.dataset.status = value;
+        if (field === 'priority') row.dataset.priority = value;
+      }
+    } else {
+      alert('Error: ' + (res.error || 'unknown'));
+      location.reload();
+    }
+  }).catch(err => {
+    alert('Network error: ' + err);
+    location.reload();
   });
 }
 </script>
