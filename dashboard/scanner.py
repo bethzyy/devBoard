@@ -129,7 +129,14 @@ def extract_version(project_dir):
 
 
 def extract_description(project_dir):
-    """Extract project description from README.md or CLAUDE.md."""
+    """Extract concise Chinese project description from CLAUDE.md or README.md.
+
+    Strategy: collect candidates from BOTH files, then prefer lines with Chinese.
+    """
+    boilerplate = "this file provides guidance to claude code"
+    has_chinese = re.compile(r'[\u4e00-\u9fff]')
+    candidates = []
+
     for filename in ["CLAUDE.md", "README.md"]:
         filepath = project_dir / filename
         if not filepath.exists():
@@ -137,16 +144,157 @@ def extract_description(project_dir):
         try:
             content = filepath.read_text(encoding="utf-8", errors="replace")
             lines = content.split("\n")
+
+            # Phase 1: collect from Project Overview section
+            in_overview = False
             for line in lines:
-                line = line.strip()
-                if not line or line.startswith("#"):
+                stripped = line.strip()
+                if stripped.lower().startswith(("## project overview", "## 项目概述", "## 项目简介")):
+                    in_overview = True
                     continue
-                # Found first non-heading, non-empty line
-                if len(line) > 10:
-                    return line[:150]
+                if in_overview and stripped.startswith("## "):
+                    break
+                if not in_overview:
+                    continue
+                if not stripped or stripped.startswith("#"):
+                    continue
+                if stripped.startswith(("<", "![", "---", "**-", "[!", "|")):
+                    continue
+                if stripped.lower().startswith(boilerplate):
+                    continue
+                # Skip numbered/bullet list items
+                if re.match(r'^(\d+\.|[-*])\s', stripped):
+                    continue
+                # Skip metadata fields: **Key**: value, **Key:** value, **Key:**
+                if re.match(r'^\*\*.*[:：]\*\*\s', stripped):
+                    continue
+                if re.match(r'^\*\*.*\*\*[:：]\s', stripped):
+                    continue
+                # Skip bold-only lines like **Tech Stack:**
+                if re.match(r'^\*\*.*\*\*\s*$', stripped):
+                    continue
+                # Skip lines that are section labels (end with colon)
+                if stripped.endswith(':') or stripped.endswith('：'):
+                    continue
+                # Strip blockquote prefix (> text → text)
+                if stripped.startswith('> '):
+                    stripped = stripped[2:].strip()
+                if len(stripped) > 5:
+                    candidates.append(stripped)
+
+            # Phase 2: first paragraph after main # heading (before ##)
+            found_h1 = False
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("# ") and not stripped.startswith("## "):
+                    found_h1 = True
+                    continue
+                if found_h1 and stripped.startswith("## "):
+                    break
+                if not found_h1:
+                    continue
+                if not stripped or stripped.startswith("#"):
+                    continue
+                if stripped.lower().startswith(boilerplate):
+                    continue
+                if stripped.startswith(("<", "![", "---", "**-", "[!", "|")):
+                    continue
+                if stripped.startswith(("```", "- ", "* ", "1. ", "2. ")):
+                    continue
+                # Strip blockquote prefix (> text → text)
+                if stripped.startswith('> '):
+                    stripped = stripped[2:].strip()
+                # Skip file paths and executables
+                if re.match(r'^(dist/|.*\.exe$|.*\.dll$)', stripped):
+                    continue
+                # Skip lines that are just "project - English description" h1 titles
+                if stripped.startswith("CLAUDE.md"):
+                    continue
+                if len(stripped) > 5:
+                    candidates.append(stripped)
+                    break
         except Exception:
             pass
-    return None
+
+    if not candidates:
+        return None
+
+    # Prefer Chinese candidates
+    for c in candidates:
+        if has_chinese.search(c):
+            return clean_description(c)
+
+    # Fallback: first candidate
+    return clean_description(candidates[0])
+
+
+def clean_description(text):
+    """Clean and shorten a description: extract Chinese part, strip markdown and English noise."""
+    has_chinese = re.compile(r'[\u4e00-\u9fff]')
+
+    # Remove markdown bold/italic markers
+    text = re.sub(r'\*{1,3}', '', text)
+    # Remove markdown links [text](url)
+    text = re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', text)
+
+    if not has_chinese.search(text):
+        # Pure English — just trim
+        text = text.strip().strip('"\'`>')
+        return text[:120] if len(text) > 120 else text
+
+    # --- Text has Chinese ---
+
+    # Step 1: try separator split (common: "English Name - 中文描述")
+    step1_split = False
+    for sep in [' — ', ' – ', ' - ', '：', ': ']:
+        parts = text.split(sep)
+        if len(parts) >= 2:
+            # Find the part with the most Chinese characters
+            best = max(parts, key=lambda p: len(has_chinese.findall(p)))
+            if len(has_chinese.findall(best)) >= 2:
+                text = best.strip()
+                step1_split = True
+                break
+
+    # Step 2: extract from parentheses if text is still mostly English
+    # Skip if Step 1 already did a split — don't re-extract from sub-part
+    if not step1_split:
+        cn_count = len(has_chinese.findall(text))
+        total = max(len(text), 1)
+        if cn_count / total < 0.3:
+            paren_chinese = re.findall(r'[\(（]([^)）]*[\u4e00-\u9fff][^)）]*)[\)）]', text)
+            if paren_chinese:
+                text = paren_chinese[0]
+
+    # Step 3: strip "This is a/an/the" prefix
+    text = re.sub(r'^This\s+is\s+(an?\s+)?', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'^the\s+', '', text, flags=re.IGNORECASE)
+
+    # Step 4: strip "is an/a ..." trailing English clause
+    text = re.sub(r'\s+is\s+an?\s+.*$', '', text)
+
+    # Step 5: strip trailing parenthesized content followed by English words
+    text = re.sub(r'\s*[\(（][^)）]*[\)）]\s*(project|app|tool|application|system)?\s*$', '', text, flags=re.IGNORECASE)
+
+    # Step 6: strip trailing English after last Chinese character
+    last_cjk = -1
+    for i, ch in enumerate(text):
+        if '\u4e00' <= ch <= '\u9fff' or ch in '（）、，。！？；：""''…—':
+            last_cjk = i
+    if last_cjk >= 0 and last_cjk < len(text) - 1:
+        trailing = text[last_cjk + 1:].strip()
+        # Keep trailing if it's short or contains useful non-English (like numbers, symbols)
+        if trailing and not re.match(r'^[a-zA-Z\s]+$', trailing):
+            pass  # keep it
+        else:
+            text = text[:last_cjk + 1]
+
+    text = text.strip().strip('"\'`>')
+
+    # Step 7: collapse multiple spaces
+    text = re.sub(r'\s{2,}', ' ', text)
+
+    return text[:120] if len(text) > 120 else text
 
 
 def count_todos(project_dir):
