@@ -68,6 +68,8 @@ UI uses a **dark header + light body** pattern (Sentry-inspired, blue palette):
 
 - `GET/POST/DELETE /api/workspace` — workspace management
 - `PATCH /api/plan/<filename>/status` — update plan status (not_started/in_progress/completed/deleted)
+- `PATCH /api/project/<name>/priority` — update project priority (high/medium/low), persisted to app_config.json
+- `PATCH /api/project/<name>/status` — update project status override (active/stale/complete/paused/unknown), persisted to app_config.json
 - `GET /api/data` — raw JSON scan data
 - `POST /scan` — trigger rescan
 
@@ -78,3 +80,7 @@ UI uses a **dark header + light body** pattern (Sentry-inspired, blue palette):
 - **Soft delete for plans**: marks as deleted in `plans_status.json`, doesn't remove the file
 - **Category ordering**: per-workspace, stored in `app_config.json` under `workspaces.<path>.categories_order`
 - **Template caching disabled**: `TEMPLATES_AUTO_RELOAD=True` for development convenience
+- **Editable Priority & Status**: users can change Priority (H/M/L) and Status via inline dropdowns in the dashboard, values persisted in app_config.json and override scan results on next scan
+- **Smart description extraction**: scanner reads both CLAUDE.md and README.md, prefers Chinese descriptions, supports config override via `description` field in app_config.json
+- **Expandable detail panels**: click chevron or project name to expand a detail panel with Health Score, Plans, Quick Stats, and Next Steps
+- **Column sorting**: all column headers are clickable for sort within groups (ascending/descending toggle)
