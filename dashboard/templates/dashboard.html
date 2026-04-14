@@ -198,10 +198,13 @@ td {
   font-size: 11px; cursor: pointer; user-select: none;
 }
 .chevron.expanded { transform: rotate(90deg); color: var(--brand-blue); }
-.proj-row td { padding: 7px 14px; transition: background 0.1s; cursor: pointer; }
-.proj-row:hover td { background: rgba(59,130,246,0.04); }
-.proj-row.expanded td { background: rgba(59,130,246,0.06); border-left: 3px solid var(--brand-blue); }
-.proj-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.2px; }
+.proj-row td { padding: 7px 14px; transition: background 0.1s; }
+.proj-row:hover td { background: rgba(59,130,246,0.03); }
+.proj-row.expanded td { background: rgba(59,130,246,0.04); }
+.proj-row.expanded td:first-child { border-left: 2px solid var(--brand-blue); }
+.clickable { cursor: pointer; }
+.proj-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; letter-spacing: -0.2px; cursor: pointer; }
+.proj-name:hover { color: var(--brand-blue); }
 .priority-badge {
   display: inline-block; padding: 1px 7px; border-radius: var(--radius-pill);
   font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
@@ -219,15 +222,16 @@ td {
 
 /* === Detail Panel (Expandable Row) === */
 .detail-row { border-bottom: 1px solid var(--border-light); }
-.detail-row > td { padding: 0 !important; border-left: 3px solid var(--brand-blue); }
+.detail-row > td { padding: 0 !important; }
 .detail-wrapper {
   display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease-out;
 }
 .detail-wrapper.expanded { grid-template-rows: 1fr; }
 .detail-inner { overflow: hidden; min-height: 0; }
 .detail-content {
-  display: grid; grid-template-columns: 3fr 2fr; gap: 24px; padding: 24px 32px;
-  max-width: 100%;
+  display: grid; grid-template-columns: 3fr 2fr; gap: 24px; padding: 20px 28px;
+  max-width: 100%; background: linear-gradient(135deg, #f8f9fc 0%, #f0f4fa 100%);
+  border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);
 }
 
 /* Panel sections */
@@ -460,11 +464,10 @@ td {
     data-active="{{ p.days_since_activity if p.days_since_activity is not none else 999 }}"
     data-todo="{{ p.todo_count }}"
     data-search="{{ p.name }} {{ p.description or '' }} {{ p.tech_stack | join(' ') }} {{ cat }}
-    {% for pl in p.plans %}{{ pl.title or '' }} {% endfor %}"
-    onclick="toggleDetail(this)">
-  <td><span class="chevron" id="chevron-{{ p.name }}">&#9654;</span></td>
+    {% for pl in p.plans %}{{ pl.title or '' }} {% endfor %}">
+  <td><span class="chevron clickable" id="chevron-{{ p.name }}" onclick="toggleDetail(this.closest('.proj-row'))">&#9654;</span></td>
   <td>
-    <span class="proj-name">{{ p.name }}</span>
+    <span class="proj-name" onclick="toggleDetail(this.closest('.proj-row'))">{{ p.name }}</span>
   </td>
   <td>
     <div class="intro-text">{{ p.description or '-' }}</div>
